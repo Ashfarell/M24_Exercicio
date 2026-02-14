@@ -1,8 +1,9 @@
 const { spec } = require('pactum');
 
 let token;
+let categoryId;
 
-describe('API - Add Category', () => {
+describe('API - Delete Category', () => {
 
   // 🔐 LOGIN
   before(async () => {
@@ -19,13 +20,24 @@ describe('API - Add Category', () => {
   });
 
   // 📁 CRIAR CATEGORIA
-  it('deve adicionar uma categoria com sucesso', async () => {
-    await spec()
+  before(async () => {
+    const response = await spec()
       .post('http://lojaebac.ebaconline.art.br/api/addCategory')
       .withHeaders('Authorization', token)
       .withJson({
-        name: "Categoria Teste M24"
+        name: "Categoria Para Deletar"
       })
+      .expectStatus(200);
+
+    categoryId = response.body.data._id;
+    console.log('Categoria criada:', categoryId);
+  });
+
+  // 🗑️ DELETE
+  it('deve deletar a categoria com sucesso', async () => {
+    await spec()
+      .delete(`http://lojaebac.ebaconline.art.br/api/deleteCategory/${categoryId}`)
+      .withHeaders('Authorization', token)
       .expectStatus(200)
       .expectJsonLike({
         success: true

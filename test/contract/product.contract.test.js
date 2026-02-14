@@ -3,44 +3,45 @@ const { spec } = require('pactum');
 let token;
 let categoryId;
 
-describe('API - Products', () => {
+describe('CONTRACT - Product Service', () => {
 
   before(async () => {
-    token = await spec()
+    const login = await spec()
       .post('http://lojaebac.ebaconline.art.br/public/authUser')
       .withJson({
         email: "admin@admin.com",
         password: "admin123"
-      })
-      .expectStatus(200)
-      .returns('data.token');
-  });
+      });
 
-  before(async () => {
-    categoryId = await spec()
+    token = login.body.data.token;
+
+    const category = await spec()
       .post('http://lojaebac.ebaconline.art.br/api/addCategory')
       .withHeaders('Authorization', token)
-      .withJson({
-        name: "Categoria Teste M24"
-      })
-      .expectStatus(200)
-      .returns('data._id');
+      .withJson({ name: "Categoria Contract" });
+
+    categoryId = category.body.data._id;
   });
 
-  it('deve adicionar um produto com sucesso', async () => {
+  it('deve respeitar o contrato de criação de produto', async () => {
     await spec()
       .post('http://lojaebac.ebaconline.art.br/api/addProduct')
       .withHeaders('Authorization', token)
       .withJson({
-        name: "Produto Teste M24",
+        name: "Produto Contract",
         price: 100,
-        description: "Descrição do Produto Teste M24",
+        description: "Contrato",
         quantity: 10,
         category: categoryId
       })
       .expectStatus(200)
       .expectJsonLike({
-        success: true
+        success: true,
+        data: {
+          _id: /.+/,
+          name: "Produto Contract",
+          price: 100
+        }
       });
   });
 

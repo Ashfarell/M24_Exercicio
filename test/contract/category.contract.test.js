@@ -2,33 +2,33 @@ const { spec } = require('pactum');
 
 let token;
 
-describe('API - Add Category', () => {
+describe('CONTRACT - Category Service', () => {
 
-  // 🔐 LOGIN
   before(async () => {
-    const response = await spec()
+    const login = await spec()
       .post('http://lojaebac.ebaconline.art.br/public/authUser')
       .withJson({
         email: "admin@admin.com",
         password: "admin123"
-      })
-      .expectStatus(200);
+      });
 
-    token = response.body.data.token;
-    console.log('Token:', token);
+    token = login.body.data.token;
   });
 
-  // 📁 CRIAR CATEGORIA
-  it('deve adicionar uma categoria com sucesso', async () => {
+  it('deve respeitar o contrato de criação de categoria', async () => {
     await spec()
       .post('http://lojaebac.ebaconline.art.br/api/addCategory')
       .withHeaders('Authorization', token)
       .withJson({
-        name: "Categoria Teste M24"
+        name: "Categoria Contract Test"
       })
       .expectStatus(200)
       .expectJsonLike({
-        success: true
+        success: true,
+        data: {
+          _id: /.+/,
+          name: "Categoria Contract Test"
+        }
       });
   });
 
